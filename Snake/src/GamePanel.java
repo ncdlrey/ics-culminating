@@ -1,8 +1,30 @@
+/**
+ * 
+ * A simple snake game that incorporates Mr. So's catch phrases
+ * 
+ * date      	2020/06/20
+ * @filename    GamePanel.java
+ * @authors     Nicole D. & Sadiksha D. 
+ *
+ **/
+
+// SOURCES:
+// followed https://www.youtube.com/watch?v=bI6e6qjJ8JQ&list=LL&index=4 to make game 
+// followed https://www.youtube.com/watch?v=qPVkRtuf9CQ&t=1194s to try adding sound
+
+
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+
+import javax.sound.sampled.AudioSystem;
+
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.util.Random;
 import javax.swing.JPanel;
+
+
 
 public class GamePanel extends JPanel implements ActionListener{
 	
@@ -14,15 +36,37 @@ public class GamePanel extends JPanel implements ActionListener{
 	final int x[] = new int[GAME_UNITS];
 	final int y[] = new int[GAME_UNITS];
 	int bodyParts = 6;
-	int applesEaten;
-	int appleX;
-	int appleY;
+	int bagelsEaten;
+	int bagelX;
+	int bagelY;
 	char direction = 'R';
 	boolean running = false;
 	Timer timer;
 	Random random;
 	
+
+	
+		
+		public void playSound(){
+			File stayInYourLane = new File(".//res//stayInYourLane.wav").getAbsoluteFile();
+
+			
+			try {
+				
+				Clip clip = AudioSystem.getClip();
+				clip.open(AudioSystem.getAudioInputStream(stayInYourLane));
+				clip.start();
+				clip.loop(5);
+
+			}
+			catch(Exception e) {
+	            System.out.println("Error playing sound");
+			}
+		}
+	
+	
 	GamePanel(){
+		
 		random = new Random();
 		this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_WIDTH));
 		this.setBackground(new Color(106, 153, 78));
@@ -46,15 +90,11 @@ public class GamePanel extends JPanel implements ActionListener{
 	public void draw(Graphics g) {
 		
 		if (running) {
-			/* aide for visualizing the grid
-			for (int i = 0; i < SCREEN_HEIGHT/UNIT_SIZE;i++) {
-				g.drawLine(i*UNIT_SIZE, 0, i*UNIT_SIZE, SCREEN_HEIGHT);
-				g.drawLine(0, i*UNIT_SIZE, SCREEN_WIDTH, i*UNIT_SIZE);
-			}
-		*/
-			
-			g.setColor(new Color(188, 71, 73)); //APPLE
-			g.fillOval(appleX, appleY,UNIT_SIZE,UNIT_SIZE);
+			super.paintComponent(g);
+		    Graphics2D g2 = (Graphics2D) g;
+		    g2.setStroke(new BasicStroke(9));
+			g.setColor(new Color(212, 163, 115));
+			g.drawOval(bagelX, bagelY,UNIT_SIZE,UNIT_SIZE);
 			
 			for (int i = 0;i < bodyParts; i++) {
 				if (i==0) {
@@ -68,9 +108,14 @@ public class GamePanel extends JPanel implements ActionListener{
 			}
 			
 			g.setColor(new Color(232, 237, 223));
-			g.setFont(new Font("Ink Free", Font.BOLD, 40));
+			g.setFont(new Font("Helvetica", Font.BOLD, 40));
 			FontMetrics metrics = getFontMetrics(g.getFont());
-			g.drawString("Score: " + applesEaten, (SCREEN_WIDTH-metrics.stringWidth("Score: " + applesEaten))/2, g.getFont().getSize());
+			g.drawString("Score: " + bagelsEaten, (SCREEN_WIDTH-metrics.stringWidth("Score: " + bagelsEaten))/2, g.getFont().getSize());
+			
+			g.setColor(new Color(232, 237, 223));
+			g.setFont(new Font("Helvetica", Font.BOLD, 25));
+			FontMetrics metrics2 = getFontMetrics(g.getFont());
+			g.drawString("GET THOSE BAGELS!", (SCREEN_WIDTH-metrics2.stringWidth("GET THOSE BAGELS!"))/2, SCREEN_HEIGHT/2 -200);
 		}
 		
 		else {
@@ -79,8 +124,8 @@ public class GamePanel extends JPanel implements ActionListener{
 	}
 	
 	public void newApple() {
-		appleX = random.nextInt((int)(SCREEN_WIDTH/UNIT_SIZE))*UNIT_SIZE;
-		appleY = random.nextInt((int)(SCREEN_HEIGHT/UNIT_SIZE))*UNIT_SIZE;
+		bagelX = random.nextInt((int)(SCREEN_WIDTH/UNIT_SIZE))*UNIT_SIZE;
+		bagelY = random.nextInt((int)(SCREEN_HEIGHT/UNIT_SIZE))*UNIT_SIZE;
 	}
 	
 	public void move() {
@@ -105,9 +150,9 @@ public class GamePanel extends JPanel implements ActionListener{
 		}
 	}
 	public void checkApple() {
-		if ((x[0] == appleX) && (y[0] == appleY)) {
+		if ((x[0] == bagelX) && (y[0] == bagelY)) {
 			bodyParts++;
-			applesEaten++;
+			bagelsEaten++;
 			newApple();
 			
 		}
@@ -141,18 +186,39 @@ public class GamePanel extends JPanel implements ActionListener{
 			timer.stop();
 		}
 	}
-	public void gameOver(Graphics g) {
+	public void gameOver(Graphics g) {		
+		
+		//SFX
+		playSound();
+		
 		// Score
 		g.setColor(new Color(188, 71, 73));
-		g.setFont(new Font("Ink Free", Font.BOLD, 40));
+		g.setFont(new Font("Helvatica", Font.BOLD, 40));
 		FontMetrics metrics1 = getFontMetrics(g.getFont());
-		g.drawString("Score: " + applesEaten, (SCREEN_WIDTH-metrics1.stringWidth("Score: " + applesEaten))/2, g.getFont().getSize()); 
+		g.drawString("Score: " + bagelsEaten, (SCREEN_WIDTH-metrics1.stringWidth("Score: " + bagelsEaten))/2, g.getFont().getSize()); 
+		
 		
 		// Game Over Text
-		g.setColor(new Color(188, 71, 73));
-		g.setFont(new Font("Ink Free", Font.BOLD, 75));
+		g.setColor(new Color(188, 57, 8));
+		g.setFont(new Font("Helvatica", Font.BOLD, 75));
 		FontMetrics metrics2 = getFontMetrics(g.getFont());
-		g.drawString("Game Over", (SCREEN_WIDTH-metrics2.stringWidth("Game Over"))/2, SCREEN_HEIGHT/2); // STOPED VID @ 37:13
+		g.drawString("Game Over", (SCREEN_WIDTH-metrics2.stringWidth("Game Over"))/2, SCREEN_HEIGHT/2); 
+		
+		
+		// Stay in your lane
+		g.setColor(new Color(191, 67, 66));
+		g.setFont(new Font("Helvatica", Font.BOLD, 35));
+		FontMetrics metrics3 = getFontMetrics(g.getFont());
+		g.drawString("STAY IN YOUR LANE!!!", (SCREEN_WIDTH-metrics3.stringWidth("STAY IN YOUR LANE!!!"))/2, SCREEN_HEIGHT/2 + 200);
+
+	
+		g.setColor(new Color(188, 57, 8));
+		g.setFont(new Font("Helvatica", Font.BOLD, 25));
+		FontMetrics metrics4 = getFontMetrics(g.getFont());
+		g.drawString("BYEEEEEEEEEEEEEEEEEEEE", (SCREEN_WIDTH-metrics4.stringWidth("BYEEEEEEEEEEEEEEEEEEEE"))/2, SCREEN_HEIGHT/2+240);
+		
+
+		
 	}
 	@Override
 	public void actionPerformed(ActionEvent e) {
